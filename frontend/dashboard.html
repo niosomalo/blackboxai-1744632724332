@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Café Inventory System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-2xl font-bold text-gray-800">Café Inventory</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/dashboard.html" class="border-b-2 border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/bahan.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Bahan Baku
+                        </a>
+                        <a href="/menu.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Menu & Resep
+                        </a>
+                        <a href="/penjualan.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Penjualan
+                        </a>
+                        <a href="/forecast.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Forecast
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Sales Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-cash-register text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 uppercase">Penjualan Hari Ini</p>
+                        <p id="todaySales" class="text-2xl font-semibold">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COGS Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-calculator text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 uppercase">COGS Hari Ini</p>
+                        <p id="todayCogs" class="text-2xl font-semibold">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profit Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 uppercase">Profit Hari Ini</p>
+                        <p id="todayProfit" class="text-2xl font-semibold">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waste Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-trash-alt text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 uppercase">Waste Hari Ini</p>
+                        <p id="todayWaste" class="text-2xl font-semibold">0%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Sales Trend Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold mb-4">Trend Penjualan (7 Hari Terakhir)</h2>
+                <canvas id="salesChart"></canvas>
+            </div>
+
+            <!-- Top Menu Items Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold mb-4">Menu Terlaris</h2>
+                <canvas id="menuChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert & Recommendations -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Low Stock Alert -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                    Stok Menipis
+                </h2>
+                <div id="lowStockList" class="space-y-4">
+                    <!-- Low stock items will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Purchase Recommendations -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-shopping-cart text-blue-500 mr-2"></i>
+                    Rekomendasi Pembelian
+                </h2>
+                <div id="purchaseRecommendations" class="space-y-4">
+                    <!-- Recommendations will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        // Format currency
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+        };
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Get today's summary
+                // Use dates from two months ago
+                const today = new Date();
+                const twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1); // First day of two months ago
+                const endDate = new Date(today.getFullYear(), today.getMonth() - 2, 7); // Get 7 days
+                
+                const start = twoMonthsAgo.toISOString().split('T')[0];
+                const end = endDate.toISOString().split('T')[0];
+                
+                const summaryResponse = await fetch(`/api/reports/daily-summary?start_date=${start}&end_date=${end}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const summaryData = await summaryResponse.json();
+
+                if (summaryData.daily_summary && summaryData.daily_summary[0]) {
+                    const today = summaryData.daily_summary[0];
+                    document.getElementById('todaySales').textContent = formatCurrency(today.total_sales);
+                    document.getElementById('todayCogs').textContent = formatCurrency(today.total_cogs);
+                    document.getElementById('todayProfit').textContent = formatCurrency(today.total_profit);
+                    document.getElementById('todayWaste').textContent = 
+                        today.waste_percentage.toFixed(1) + '%';
+                }
+
+                // Load sales trend chart
+                const salesChart = new Chart(document.getElementById('salesChart'), {
+                    type: 'line',
+                    data: {
+                        labels: summaryData.daily_summary.map(day => day.tanggal),
+                        datasets: [{
+                            label: 'Penjualan',
+                            data: summaryData.daily_summary.map(day => day.total_sales),
+                            borderColor: 'rgb(59, 130, 246)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Get top menu items
+                const menuResponse = await fetch('/api/penjualan/top-menu', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const menuData = await menuResponse.json();
+
+                // Load menu chart
+                const menuChart = new Chart(document.getElementById('menuChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: menuData.data.map(item => item.nama_menu),
+                        datasets: [{
+                            label: 'Jumlah Terjual',
+                            data: menuData.data.map(item => item.total_sold),
+                            backgroundColor: 'rgb(147, 51, 234)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Load low stock alerts
+                const stockResponse = await fetch('/api/bahan/low-stock', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const stockData = await stockResponse.json();
+
+                const lowStockList = document.getElementById('lowStockList');
+                lowStockList.innerHTML = stockData.data.map(item => `
+                    <div class="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                        <div>
+                            <h3 class="font-medium text-yellow-800">${item.nama_bahan}</h3>
+                            <p class="text-sm text-yellow-600">
+                                Stok: ${item.stok_real} ${item.satuan} (Min: ${item.min_stok} ${item.satuan})
+                            </p>
+                        </div>
+                        <span class="px-3 py-1 text-xs font-medium text-yellow-800 bg-yellow-200 rounded-full">
+                            Stok Menipis
+                        </span>
+                    </div>
+                `).join('');
+
+                // Load purchase recommendations
+                const forecastResponse = await fetch('/api/forecast/recommendations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const forecastData = await forecastResponse.json();
+
+                const recommendationsList = document.getElementById('purchaseRecommendations');
+                recommendationsList.innerHTML = forecastData.data.map(item => `
+                    <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                        <div>
+                            <h3 class="font-medium text-blue-800">${item.nama_bahan}</h3>
+                            <p class="text-sm text-blue-600">
+                                Rekomendasi: ${item.recommended_purchase} ${item.satuan}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-blue-600">Confidence Level</p>
+                            <span class="px-3 py-1 text-xs font-medium text-blue-800 bg-blue-200 rounded-full">
+                                ${(item.confidence_level * 100).toFixed(1)}%
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load data when page loads
+        loadDashboardData();
+    </script>
+</body>
+</html>
