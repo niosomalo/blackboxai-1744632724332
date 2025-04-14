@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjualan - Café Inventory System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-2xl font-bold text-gray-800">Café Inventory</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/dashboard.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/bahan.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Bahan Baku
+                        </a>
+                        <a href="/menu.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Menu & Resep
+                        </a>
+                        <a href="/penjualan.html" class="border-b-2 border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                            Penjualan
+                        </a>
+                        <a href="/forecast.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Forecast
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Sales Form -->
+            <div class="lg:col-span-1">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-semibold mb-4">Input Penjualan</h2>
+                    
+                    <!-- Alert Messages -->
+                    <div id="alertSuccess" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                        <span class="block sm:inline"></span>
+                    </div>
+                    <div id="alertError" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        <span class="block sm:inline"></span>
+                    </div>
+
+                    <form id="salesForm">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="tanggal">
+                                Tanggal
+                            </label>
+                            <input type="date" id="tanggal" name="tanggal" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="menuSelect">
+                                Menu
+                            </label>
+                            <select id="menuSelect" name="id_menu" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                required>
+                                <option value="">Pilih Menu</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="jumlahTerjual">
+                                Jumlah
+                            </label>
+                            <input type="number" id="jumlahTerjual" name="jumlah_terjual" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                required min="1">
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                <i class="fas fa-save mr-2"></i>
+                                Simpan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Stock Check Result -->
+                <div id="stockCheckResult" class="hidden mt-4 bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Pengecekan Stok</h3>
+                    <div id="stockCheckContent"></div>
+                </div>
+            </div>
+
+            <!-- Sales History -->
+            <div class="lg:col-span-2">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">Riwayat Penjualan</h2>
+                        <div class="flex space-x-2">
+                            <input type="date" id="startDate" 
+                                class="shadow border rounded py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <input type="date" id="endDate" 
+                                class="shadow border rounded py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <button onclick="loadSalesHistory()" 
+                                class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Menu</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COGS</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Sales history will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sale Detail Modal -->
+    <div id="saleDetailModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Detail Penjualan</h3>
+                <div id="saleDetailContent">
+                    <!-- Sale details will be shown here -->
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="button" onclick="closeSaleDetail()" 
+                        class="px-4 py-2 text-gray-500 hover:text-gray-700">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        // Format currency
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+        };
+
+        // Format date
+        const formatDate = (dateString) => {
+            return new Date(dateString).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        };
+
+        // Show alert
+        function showAlert(message, isSuccess = true) {
+            const alertSuccess = document.getElementById('alertSuccess');
+            const alertError = document.getElementById('alertError');
+            
+            if (isSuccess) {
+                alertSuccess.textContent = message;
+                alertSuccess.classList.remove('hidden');
+                setTimeout(() => alertSuccess.classList.add('hidden'), 3000);
+            } else {
+                alertError.textContent = message;
+                alertError.classList.remove('hidden');
+                setTimeout(() => alertError.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Load menu options
+        async function loadMenuOptions() {
+            try {
+                const response = await fetch('/api/menu/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                const menuSelect = document.getElementById('menuSelect');
+                menuSelect.innerHTML = '<option value="">Pilih Menu</option>' +
+                    data.data
+                        .filter(menu => menu.is_active)
+                        .map(menu => `
+                            <option value="${menu.id_menu}">${menu.nama_menu}</option>
+                        `).join('');
+            } catch (error) {
+                showAlert('Error loading menu options: ' + error.message, false);
+            }
+        }
+
+        // Check stock availability
+        async function checkStock() {
+            const menuId = document.getElementById('menuSelect').value;
+            const quantity = document.getElementById('jumlahTerjual').value;
+
+            if (!menuId || !quantity) return;
+
+            try {
+                const response = await fetch(`/api/menu/check-stock/${menuId}?quantity=${quantity}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                const resultDiv = document.getElementById('stockCheckResult');
+                const contentDiv = document.getElementById('stockCheckContent');
+
+                if (data.available) {
+                    contentDiv.innerHTML = `
+                        <div class="text-green-600">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Stok mencukupi untuk pesanan ini
+                        </div>
+                    `;
+                } else {
+                    contentDiv.innerHTML = `
+                        <div class="text-red-600">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            Stok tidak mencukupi:
+                        </div>
+                        <ul class="mt-2 text-sm text-red-600">
+                            ${Object.entries(data.shortages).map(([bahan, detail]) => `
+                                <li>• ${bahan}: kurang ${detail.shortage.toFixed(2)} ${detail.unit}</li>
+                            `).join('')}
+                        </ul>
+                    `;
+                }
+
+                resultDiv.classList.remove('hidden');
+            } catch (error) {
+                showAlert('Error checking stock: ' + error.message, false);
+            }
+        }
+
+        // Load sales history
+        async function loadSalesHistory() {
+            try {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                let url = '/api/penjualan/?include_details=true';
+                if (startDate) url += `&start_date=${startDate}`;
+                if (endDate) url += `&end_date=${endDate}`;
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                const tableBody = document.getElementById('salesTableBody');
+                tableBody.innerHTML = data.data.map(sale => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatDate(sale.tanggal)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${sale.nama_menu}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${sale.jumlah_terjual}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatCurrency(sale.total_sales)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatCurrency(sale.total_cogs)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatCurrency(sale.profit)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <button onclick="viewSaleDetail(${sale.id_penjualan})" 
+                                class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showAlert('Error loading sales history: ' + error.message, false);
+            }
+        }
+
+        // View sale detail
+        async function viewSaleDetail(id) {
+            try {
+                const response = await fetch(`/api/penjualan/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const sale = await response.json();
+
+                document.getElementById('saleDetailContent').innerHTML = `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Tanggal</p>
+                                <p class="font-medium">${formatDate(sale.tanggal)}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Menu</p>
+                                <p class="font-medium">${sale.nama_menu}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Jumlah</p>
+                                <p class="font-medium">${sale.jumlah_terjual}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Total Penjualan</p>
+                                <p class="font-medium">${formatCurrency(sale.total_sales)}</p>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <h4 class="font-medium mb-2">Detail Penggunaan Bahan:</h4>
+                            <div class="space-y-2">
+                                ${sale.usage_details.map(usage => `
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <div class="font-medium">${usage.nama_bahan}</div>
+                                        <div class="text-sm text-gray-600">
+                                            Terpakai: ${usage.jumlah_terpakai} gram
+                                            ${usage.waste_amount > 0 
+                                                ? `(Waste: ${usage.waste_amount} gram - ${usage.waste_percentage.toFixed(1)}%)`
+                                                : ''
+                                            }
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            Cost: ${formatCurrency(usage.cost)}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Total COGS</p>
+                                    <p class="font-medium">${formatCurrency(sale.total_cogs)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Profit</p>
+                                    <p class="font-medium">${formatCurrency(sale.profit)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('saleDetailModal').classList.remove('hidden');
+            } catch (error) {
+                showAlert('Error loading sale detail: ' + error.message, false);
+            }
+        }
+
+        // Close sale detail modal
+        function closeSaleDetail() {
+            document.getElementById('saleDetailModal').classList.add('hidden');
+        }
+
+        // Form handlers
+        document.getElementById('salesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                tanggal: document.getElementById('tanggal').value,
+                id_menu: document.getElementById('menuSelect').value,
+                jumlah_terjual: parseInt(document.getElementById('jumlahTerjual').value)
+            };
+
+            try {
+                const response = await fetch('/api/penjualan/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Penjualan berhasil dicatat');
+                    document.getElementById('salesForm').reset();
+                    document.getElementById('stockCheckResult').classList.add('hidden');
+                    loadSalesHistory();
+                } else {
+                    showAlert(result.error, false);
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        });
+
+        // Event listeners
+        document.getElementById('menuSelect').addEventListener('change', checkStock);
+        document.getElementById('jumlahTerjual').addEventListener('input', checkStock);
+
+        // Set default dates
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+
+        document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        document.getElementById('tanggal').value = today.toISOString().split('T')[0];
+
+        // Load initial data
+        loadMenuOptions();
+        loadSalesHistory();
+    </script>
+</body>
+</html>
