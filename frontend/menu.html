@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu & Resep - Café Inventory System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-2xl font-bold text-gray-800">Café Inventory</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/dashboard.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/bahan.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Bahan Baku
+                        </a>
+                        <a href="/menu.html" class="border-b-2 border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                            Menu & Resep
+                        </a>
+                        <a href="/penjualan.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Penjualan
+                        </a>
+                        <a href="/forecast.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Forecast
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Menu & Resep</h2>
+            <button id="addMenuBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <i class="fas fa-plus mr-2"></i>
+                Tambah Menu
+            </button>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertSuccess" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+            <span class="block sm:inline"></span>
+        </div>
+        <div id="alertError" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            <span class="block sm:inline"></span>
+        </div>
+
+        <!-- Menu Table -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Menu</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Jual</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COGS</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit Margin</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="menuTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Table content will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Menu Modal -->
+    <div id="menuModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">Tambah Menu</h3>
+                <form id="menuForm">
+                    <input type="hidden" id="menuId">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="namaMenu">
+                                Nama Menu
+                            </label>
+                            <input type="text" id="namaMenu" name="nama_menu" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="hargaJual">
+                                Harga Jual
+                            </label>
+                            <input type="number" id="hargaJual" name="harga_jual" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                required min="0" step="100">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="deskripsi">
+                            Deskripsi
+                        </label>
+                        <textarea id="deskripsi" name="deskripsi" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            rows="2"></textarea>
+                    </div>
+
+                    <!-- Recipe Section -->
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-gray-700 text-sm font-bold">Resep</label>
+                            <button type="button" id="addIngredientBtn" 
+                                class="text-blue-600 hover:text-blue-800 text-sm">
+                                <i class="fas fa-plus mr-1"></i>
+                                Tambah Bahan
+                            </button>
+                        </div>
+                        <div id="ingredientsList" class="space-y-2">
+                            <!-- Recipe items will be added here -->
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelBtn" class="mr-2 px-4 py-2 text-gray-500 hover:text-gray-700">
+                            Batal
+                        </button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Recipe Modal -->
+    <div id="viewRecipeModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="recipeMenuName"></h3>
+                <div id="recipeList" class="space-y-2">
+                    <!-- Recipe details will be shown here -->
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="button" id="closeRecipeBtn" class="px-4 py-2 text-gray-500 hover:text-gray-700">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div id="stockAdjustmentModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Adjust Stock</h3>
+                <form id="stockAdjustmentForm">
+                    <input type="hidden" id="adjustMenuId">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stokReal">
+                            Stok Real
+                        </label>
+                        <input type="number" id="stokReal" name="stok_real" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required min="0" step="1">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="keterangan">
+                            Keterangan
+                        </label>
+                        <textarea id="keterangan" name="keterangan" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            rows="2"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelStockBtn" class="mr-2 px-4 py-2 text-gray-500 hover:text-gray-700">
+                            Batal
+                        </button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        // Format currency
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+        };
+
+        // Show alert
+        function showAlert(message, isSuccess = true) {
+            const alertSuccess = document.getElementById('alertSuccess');
+            const alertError = document.getElementById('alertError');
+            
+            if (isSuccess) {
+                alertSuccess.textContent = message;
+                alertSuccess.classList.remove('hidden');
+                setTimeout(() => alertSuccess.classList.add('hidden'), 3000);
+            } else {
+                alertError.textContent = message;
+                alertError.classList.remove('hidden');
+                setTimeout(() => alertError.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Global variables
+        let bahanList = [];
+
+        // Load bahan data
+        async function loadBahanData() {
+            try {
+                const response = await fetch('/api/bahan/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                bahanList = data.data;
+            } catch (error) {
+                showAlert('Error loading bahan data: ' + error.message, false);
+            }
+        }
+
+        // Load menu data
+        async function loadMenuData() {
+            try {
+                const response = await fetch('/api/menu/?include_resep=true', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                const tableBody = document.getElementById('menuTableBody');
+                tableBody.innerHTML = data.data.map(menu => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${menu.nama_menu}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${menu.stok_real}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatCurrency(menu.harga_jual)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatCurrency(menu.cogs)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${menu.profit_margin.toFixed(1)}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${menu.is_active 
+                                ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>'
+                                : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Non-aktif</span>'
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="adjustStock(${menu.id_menu})" class="text-green-600 hover:text-green-900 mr-2" title="Adjust Stock">
+                                <i class="fas fa-boxes"></i>
+                            </button>
+                            <button onclick="viewRecipe(${menu.id_menu})" class="text-purple-600 hover:text-purple-900 mr-2" title="View Recipe">
+                                <i class="fas fa-list"></i>
+                            </button>
+                            <button onclick="editMenu(${menu.id_menu})" class="text-blue-600 hover:text-blue-900 mr-2" title="Edit Menu">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteMenu(${menu.id_menu})" class="text-red-600 hover:text-red-900" title="Delete Menu">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showAlert('Error loading menu data: ' + error.message, false);
+            }
+        }
+
+        // Add ingredient row
+        function addIngredientRow(data = null) {
+            const div = document.createElement('div');
+            div.className = 'flex space-x-2 items-start ingredient-row';
+            
+            const options = bahanList.map(bahan => 
+                `<option value="${bahan.id_bahan}" ${data && data.id_bahan === bahan.id_bahan ? 'selected' : ''}>
+                    ${bahan.nama_bahan}
+                </option>`
+            ).join('');
+
+            div.innerHTML = `
+                <select class="bahan-select flex-grow shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">Pilih Bahan</option>
+                    ${options}
+                </select>
+                <input type="number" placeholder="Jumlah" 
+                    class="jumlah-input w-24 shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required min="0" step="0.01" value="${data ? data.jumlah : ''}">
+                <input type="number" placeholder="Waste %" 
+                    class="waste-input w-24 shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required min="0" max="100" step="0.1" value="${data ? data.waste_percent : '0'}">
+                <button type="button" onclick="this.parentElement.remove()" 
+                    class="text-red-600 hover:text-red-800 px-2 py-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            document.getElementById('ingredientsList').appendChild(div);
+        }
+
+        // Modal handlers
+        const menuModal = document.getElementById('menuModal');
+        const viewRecipeModal = document.getElementById('viewRecipeModal');
+
+        document.getElementById('addMenuBtn').addEventListener('click', () => {
+            document.getElementById('modalTitle').textContent = 'Tambah Menu';
+            document.getElementById('menuId').value = '';
+            document.getElementById('menuForm').reset();
+            document.getElementById('ingredientsList').innerHTML = '';
+            addIngredientRow();
+            menuModal.classList.remove('hidden');
+        });
+
+        document.getElementById('addIngredientBtn').addEventListener('click', () => {
+            addIngredientRow();
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            menuModal.classList.add('hidden');
+        });
+
+        document.getElementById('closeRecipeBtn').addEventListener('click', () => {
+            viewRecipeModal.classList.add('hidden');
+        });
+
+        // Form handler
+        document.getElementById('menuForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const ingredients = Array.from(document.getElementsByClassName('ingredient-row')).map(row => ({
+                id_bahan: row.querySelector('.bahan-select').value,
+                jumlah: parseFloat(row.querySelector('.jumlah-input').value),
+                waste_percent: parseFloat(row.querySelector('.waste-input').value)
+            }));
+
+            const formData = {
+                nama_menu: document.getElementById('namaMenu').value,
+                harga_jual: parseFloat(document.getElementById('hargaJual').value),
+                deskripsi: document.getElementById('deskripsi').value,
+                resep: ingredients
+            };
+
+            const id = document.getElementById('menuId').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/menu/${id}` : '/api/menu/';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(id ? 'Menu berhasil diupdate' : 'Menu berhasil ditambahkan');
+                    menuModal.classList.add('hidden');
+                    loadMenuData();
+                } else {
+                    showAlert(result.error, false);
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        });
+
+        // View recipe
+        async function viewRecipe(id) {
+            try {
+                const response = await fetch(`/api/menu/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const menu = await response.json();
+
+                document.getElementById('recipeMenuName').textContent = menu.nama_menu;
+                
+                const recipeList = document.getElementById('recipeList');
+                recipeList.innerHTML = menu.resep.map(item => `
+                    <div class="p-3 bg-gray-50 rounded">
+                        <div class="font-medium">${item.nama_bahan}</div>
+                        <div class="text-sm text-gray-600">
+                            Jumlah: ${item.jumlah} ${item.satuan}
+                            ${item.waste_percent > 0 ? ` (Waste: ${item.waste_percent}%)` : ''}
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            Cost: ${formatCurrency(item.total_cost)}
+                        </div>
+                    </div>
+                `).join('');
+
+                viewRecipeModal.classList.remove('hidden');
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        }
+
+        // Edit menu
+        async function editMenu(id) {
+            try {
+                const response = await fetch(`/api/menu/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const menu = await response.json();
+
+                document.getElementById('modalTitle').textContent = 'Edit Menu';
+                document.getElementById('menuId').value = id;
+                document.getElementById('namaMenu').value = menu.nama_menu;
+                document.getElementById('hargaJual').value = menu.harga_jual;
+                document.getElementById('deskripsi').value = menu.deskripsi || '';
+
+                document.getElementById('ingredientsList').innerHTML = '';
+                menu.resep.forEach(item => addIngredientRow(item));
+
+                menuModal.classList.remove('hidden');
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        }
+
+        // Delete menu
+        async function deleteMenu(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus menu ini?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/menu/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Menu berhasil dihapus');
+                    loadMenuData();
+                } else {
+                    showAlert(result.error, false);
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        }
+
+        // Stock adjustment modal handlers
+        const stockAdjustmentModal = document.getElementById('stockAdjustmentModal');
+        
+        document.getElementById('cancelStockBtn').addEventListener('click', () => {
+            stockAdjustmentModal.classList.add('hidden');
+        });
+
+        // Adjust stock function
+        async function adjustStock(id) {
+            try {
+                const response = await fetch(`/api/menu/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const menu = await response.json();
+
+                document.getElementById('adjustMenuId').value = id;
+                document.getElementById('stokReal').value = menu.stok_real;
+                document.getElementById('keterangan').value = '';
+
+                stockAdjustmentModal.classList.remove('hidden');
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        }
+
+        // Stock adjustment form handler
+        document.getElementById('stockAdjustmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('adjustMenuId').value;
+            const formData = {
+                stok_real: parseFloat(document.getElementById('stokReal').value),
+                keterangan: document.getElementById('keterangan').value
+            };
+
+            try {
+                const response = await fetch(`/api/menu/adjust/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Stok berhasil disesuaikan');
+                    stockAdjustmentModal.classList.add('hidden');
+                    loadMenuData();
+                } else {
+                    showAlert(result.error, false);
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        });
+
+        // Load initial data
+        loadBahanData().then(() => loadMenuData());
+    </script>
+</body>
+</html>
