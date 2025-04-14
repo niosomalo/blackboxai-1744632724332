@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bahan Baku - Café Inventory System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-2xl font-bold text-gray-800">Café Inventory</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/dashboard.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/bahan.html" class="border-b-2 border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                            Bahan Baku
+                        </a>
+                        <a href="/menu.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Menu & Resep
+                        </a>
+                        <a href="/penjualan.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Penjualan
+                        </a>
+                        <a href="/forecast.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Forecast
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Manajemen Bahan Baku</h2>
+            <button id="addBahanBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <i class="fas fa-plus mr-2"></i>
+                Tambah Bahan
+            </button>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertSuccess" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+            <span class="block sm:inline"></span>
+        </div>
+        <div id="alertError" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            <span class="block sm:inline"></span>
+        </div>
+
+        <!-- Bahan Table -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Bahan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satuan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga/gram</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="bahanTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Table content will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="bahanModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">Tambah Bahan Baku</h3>
+                <form id="bahanForm">
+                    <input type="hidden" id="bahanId">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="namaBahan">
+                            Nama Bahan
+                        </label>
+                        <input type="text" id="namaBahan" name="nama_bahan" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="satuan">
+                            Satuan
+                        </label>
+                        <input type="text" id="satuan" name="satuan" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stokAwal">
+                            Stok Awal
+                        </label>
+                        <input type="number" id="stokAwal" name="stok_awal" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required min="0" step="0.01">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="hargaPerGram">
+                            Harga per Gram
+                        </label>
+                        <input type="number" id="hargaPerGram" name="harga_per_gram" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required min="0" step="0.01">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="minStok">
+                            Minimum Stok
+                        </label>
+                        <input type="number" id="minStok" name="min_stok" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required min="0" step="0.01">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelBtn" class="mr-2 px-4 py-2 text-gray-500 hover:text-gray-700">
+                            Batal
+                        </button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div id="adjustStockModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Penyesuaian Stok</h3>
+                <form id="adjustStockForm">
+                    <input type="hidden" id="adjustBahanId">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stokReal">
+                            Stok Real
+                        </label>
+                        <input type="number" id="stokReal" name="stok_real" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required min="0" step="0.01">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="keterangan">
+                            Keterangan
+                        </label>
+                        <textarea id="keterangan" name="keterangan" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            rows="3"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelAdjustBtn" class="mr-2 px-4 py-2 text-gray-500 hover:text-gray-700">
+                            Batal
+                        </button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        // Format currency
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+        };
+
+        // Show alert
+        function showAlert(message, isSuccess = true) {
+            const alertSuccess = document.getElementById('alertSuccess');
+            const alertError = document.getElementById('alertError');
+            
+            if (isSuccess) {
+                alertSuccess.textContent = message;
+                alertSuccess.classList.remove('hidden');
+                setTimeout(() => alertSuccess.classList.add('hidden'), 3000);
+            } else {
+                alertError.textContent = message;
+                alertError.classList.remove('hidden');
+                setTimeout(() => alertError.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Load bahan data
+        async function loadBahanData() {
+            try {
+                const response = await fetch('/api/bahan/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                const tableBody = document.getElementById('bahanTableBody');
+                tableBody.innerHTML = data.data.map(bahan => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${bahan.nama_bahan}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${bahan.satuan}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${bahan.stok_real} ${bahan.satuan}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatCurrency(bahan.harga_per_gram)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${bahan.is_low_stock 
+                                ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Stok Menipis</span>'
+                                : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Normal</span>'
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="editBahan(${bahan.id_bahan})" class="text-blue-600 hover:text-blue-900 mr-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="adjustStock(${bahan.id_bahan})" class="text-green-600 hover:text-green-900 mr-2">
+                                <i class="fas fa-balance-scale"></i>
+                            </button>
+                            <button onclick="deleteBahan(${bahan.id_bahan})" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showAlert('Error loading data: ' + error.message, false);
+            }
+        }
+
+        // Modal handlers
+        const bahanModal = document.getElementById('bahanModal');
+        const adjustStockModal = document.getElementById('adjustStockModal');
+
+        document.getElementById('addBahanBtn').addEventListener('click', () => {
+            document.getElementById('modalTitle').textContent = 'Tambah Bahan Baku';
+            document.getElementById('bahanId').value = '';
+            document.getElementById('bahanForm').reset();
+            bahanModal.classList.remove('hidden');
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            bahanModal.classList.add('hidden');
+        });
+
+        document.getElementById('cancelAdjustBtn').addEventListener('click', () => {
+            adjustStockModal.classList.add('hidden');
+        });
+
+        // Form handlers
+        document.getElementById('bahanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                nama_bahan: document.getElementById('namaBahan').value,
+                satuan: document.getElementById('satuan').value,
+                stok_awal: parseFloat(document.getElementById('stokAwal').value),
+                harga_per_gram: parseFloat(document.getElementById('hargaPerGram').value),
+                min_stok: parseFloat(document.getElementById('minStok').value)
+            };
+
+            const id = document.getElementById('bahanId').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/bahan/${id}` : '/api/bahan/';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(id ? 'Bahan berhasil diupdate' : 'Bahan berhasil ditambahkan');
+                    bahanModal.classList.add('hidden');
+                    loadBahanData();
+                } else {
+                    showAlert(result.error, false);
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        });
+
+        document.getElementById('adjustStockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('adjustBahanId').value;
+            const formData = {
+                stok_real: parseFloat(document.getElementById('stokReal').value),
+                keterangan: document.getElementById('keterangan').value
+            };
+
+            try {
+                const response = await fetch(`/api/bahan/adjust-stock/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Stok berhasil disesuaikan');
+                    adjustStockModal.classList.add('hidden');
+                    loadBahanData();
+                } else {
+                    showAlert(result.error, false);
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        });
+
+        // Edit bahan
+        async function editBahan(id) {
+            try {
+                const response = await fetch(`/api/bahan/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                document.getElementById('modalTitle').textContent = 'Edit Bahan Baku';
+                document.getElementById('bahanId').value = id;
+                document.getElementById('namaBahan').value = data.nama_bahan;
+                document.getElementById('satuan').value = data.satuan;
+                document.getElementById('stokAwal').value = data.stok_awal;
+                document.getElementById('hargaPerGram').value = data.harga_per_gram;
+                document.getElementById('minStok').value = data.min_stok;
+
+                bahanModal.classList.remove('hidden');
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        }
+
+        // Adjust stock
+        function adjustStock(id) {
+            document.getElementById('adjustBahanId').value = id;
+            document.getElementById('adjustStockForm').reset();
+            adjustStockModal.classList.remove('hidden');
+        }
+
+        // Delete bahan
+        async function deleteBahan(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus bahan ini?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/bahan/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Bahan berhasil dihapus');
+                    loadBahanData();
+                } else {
+                    showAlert(result.error, false);
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, false);
+            }
+        }
+
+        // Load initial data
+        loadBahanData();
+    </script>
+</body>
+</html>
